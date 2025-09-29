@@ -1,0 +1,11 @@
+### IDE ###
+.idea/
+
+### Maven ###
+target/
+
+### OS ###
+.DS_Store
+
+
+
