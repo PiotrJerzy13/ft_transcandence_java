@@ -1,17 +1,16 @@
-package com.example.demo;
+package com.transcendence;
 
-import com.example.demo.user.User;
-import com.example.demo.user.UserRepository;
+import com.transcendence.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class DemoApplication {
+public class TranscendenceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+        SpringApplication.run(TranscendenceApplication.class, args);
     }
 
     @Bean

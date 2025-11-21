@@ -1,4 +1,4 @@
-package com.example.demo.user;
+package com.transcendence.user;
 
 import jakarta.persistence.*;
 
