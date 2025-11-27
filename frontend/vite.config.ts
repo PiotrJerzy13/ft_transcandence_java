@@ -6,8 +6,6 @@ import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-// export const API_BASE_URL =
-//     import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export default defineConfig({
     plugins: [react()],
