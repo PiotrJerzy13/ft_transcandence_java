@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AchievementsResponse {
-    private Object[] achievements; // always empty for now
+    private Object[] achievements; // always empty not implemented yet
 }

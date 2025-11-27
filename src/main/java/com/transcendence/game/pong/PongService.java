@@ -6,22 +6,25 @@ import com.transcendence.game.pong.dto.*;
 import com.transcendence.stats.UserStatsService;
 import com.transcendence.stats.dto.SaveScoreResponse;
 import com.transcendence.stats.dto.UserStatsDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @Transactional
 public class PongService {
 
-    @Autowired
-    private PongMatchRepository pongMatchRepository;
+    private final PongMatchRepository pongMatchRepository;
+    private final UserStatsService userStatsService;
 
-    @Autowired
-    private UserStatsService userStatsService;
+    // Constructor injection - no @Autowired needed!
+    public PongService(PongMatchRepository pongMatchRepository,
+                       UserStatsService userStatsService) {
+        this.pongMatchRepository = pongMatchRepository;
+        this.userStatsService = userStatsService;
+    }
 
     /**
      * Save a Pong score
@@ -70,9 +73,8 @@ public class PongService {
 
         List<PongHistoryItemDto> history = matches.stream()
                 .map(PongHistoryItemDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
 
         return new PongHistoryResponse(history);
     }
-
 }

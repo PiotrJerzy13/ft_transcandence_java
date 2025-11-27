@@ -16,13 +16,15 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "http://localhost:5173")  // Allow React dev server
 public class ArkanoidController {
 
-    @Autowired
-    private ArkanoidService arkanoidService;
+    private final ArkanoidService arkanoidService;
 
     /**
      * Save Arkanoid score
      * POST /api/arkanoid/score
      */
+    public ArkanoidController (ArkanoidService arkanoidService){
+        this.arkanoidService = arkanoidService;
+    }
     @PostMapping("/score")
     public ResponseEntity<SaveScoreResponse> saveScore(
             @Valid @RequestBody ArkanoidScoreRequest request

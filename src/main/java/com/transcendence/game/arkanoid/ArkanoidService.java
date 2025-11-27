@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 @Service
 @Transactional
 public class ArkanoidService {
@@ -64,7 +64,7 @@ public class ArkanoidService {
 
         List<ArkanoidHistoryItemDto> history = scores.stream()
                 .map(ArkanoidHistoryItemDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
 
         return new ArkanoidHistoryResponse(history);
     }
