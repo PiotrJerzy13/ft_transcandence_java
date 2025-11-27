@@ -1,0 +1,37 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+// export const API_BASE_URL =
+//     import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+export default defineConfig({
+    plugins: [react()],
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        // Only use HTTPS in development, not in production
+        ...(process.env.NODE_ENV !== 'production' && {
+            https: {
+                key: fs.readFileSync(path.join(__dirname, 'certs', 'localhost.key')),
+                cert: fs.readFileSync(path.join(__dirname, 'certs', 'localhost.crt')),
+            }
+        }),
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080',  // Changed to your Java backend
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path  // Keep the /api prefix
+            }
+        }
+    },
+    css: {
+        postcss: './postcss.config.cjs'
+    }
+
+})

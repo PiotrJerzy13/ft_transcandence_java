@@ -1,78 +1,5 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: ft_postgres
-    environment:
-      - POSTGRES_DB=ft_transcendence
-      - POSTGRES_USER=${DB_USER:-transcendence}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-secure_password}
-      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./sql/init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U transcendence -d ft_transcendence"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app_network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-
-  # Java Backend (replacing Node.js backend)
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: ft_backend
-    ports:
-      - "8080:8080"
-      - "5005:5005"  # Debug port
-    env_file:
-      - .env
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=ft_transcendence
-      - DB_USER=${DB_USER:-transcendence}
-      - DB_PASSWORD=${DB_PASSWORD:-secure_password}
-      - LOGSTASH_HOST=logstash
-      - LOGSTASH_PORT=5001
-      - LOG_LEVEL=debug
-      - JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-    volumes:
-      - ./logs/backend:/app/logs
-      - ./certs:/certs
-    working_dir: /app
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      logstash:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - app_network
-      - elk_network
-    deploy:
-      resources:
-        limits:
-          memory: 768M
-          cpus: '0.7'
-
+  # Keep all your existing services EXCEPT backend
   frontend:
     build:
       context: ./frontend
@@ -89,203 +16,28 @@ services:
     restart: unless-stopped
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - VITE_API_URL=http://localhost:8080/api
-    depends_on:
-      backend:
-        condition: service_healthy
+      - VITE_API_URL=http://localhost:8080/api  # Point to local Java backend
     networks:
       - app_network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.3'
 
-  # PgAdmin for Database Management (replaces sqlite-web)
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: ft_pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@transcendence.com}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin123}
-      - PGADMIN_CONFIG_SERVER_MODE=False
+  # Keep your other services if needed (sqlite-web, etc.)
+  sqlite-web:
+    image: coleifer/sqlite-web
+    platform: linux/amd64
+    container_name: ft_sqlite_web
     ports:
-      - "5050:80"
+      - "8086:8080"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - app_network
-    restart: unless-stopped
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch
-    env_file:
-      - .env
-    environment:
-      - node.name=elasticsearch
-      - cluster.name=elk-cluster
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=true
-      - xpack.security.enrollment.enabled=false
-      - xpack.security.http.ssl.enabled=false
-      - xpack.security.transport.ssl.enabled=false
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme123}
-      - network.host=0.0.0.0
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-      - ./elk/elasticsearch/config/ilm-policy.json:/usr/share/elasticsearch/config/ilm-policy.json
-    ports:
-      - "127.0.0.1:9200:9200"
+      - ./data:/data
+    command: ["sqlite_web", "/data/ft_transcendence.db", "--host", "0.0.0.0", "--port", "8080"]
     restart: unless-stopped
     networks:
-      - elk_network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD:-changeme123} http://localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.11.0
-    container_name: logstash
-    env_file:
-      - .env
-    environment:
-      - LS_JAVA_OPTS=-Xmx512m -Xms512m
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-changeme123}
-      - LOGSTASH_USER=logstash
-      - LOGSTASH_PASSWORD=${LOGSTASH_PASSWORD:-logstash123}
-      - XPACK_MONITORING_ENABLED=true
-      - XPACK_MONITORING_ELASTICSEARCH_USERNAME=elastic
-      - XPACK_MONITORING_ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-changeme123}
-    volumes:
-      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline
-      - ./elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-    ports:
-      - "5001:5001"
-      - "5044:5044"
-      - "9600:9600"
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-      elasticsearch_setup:
-        condition: service_completed_successfully
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5001 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    networks:
-      - elk_network
       - app_network
-
-  elasticsearch_setup:
-    image: curlimages/curl:latest
-    container_name: elasticsearch_setup
-    env_file:
-      - .env
-    environment:
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme123}
-      - LOGSTASH_PASSWORD=${LOGSTASH_PASSWORD:-logstash123}
-      - KIBANA_PASSWORD=${KIBANA_PASSWORD:-changeme123}
-    volumes:
-      - ./elk/setup_elasticsearch_users.sh:/setup.sh
-    command: ["sh", "/setup.sh"]
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    networks:
-      - elk_network
-    restart: "no"
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.11.0
-    container_name: kibana
-    env_file:
-      - .env
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD:-changeme123}
-    ports:
-      - "127.0.0.1:5601:5601"
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    networks:
-      - elk_network
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml
-      - prometheus_data:/prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--storage.tsdb.retention.time=30d"
-      - "--storage.tsdb.retention.size=100MB"
-    depends_on:
-      - backend
-    networks:
-      - monitoring_network
-      - app_network
-      - elk_network
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-      - GF_SECURITY_SECRET_KEY=${GRAFANA_SECRET_KEY}
-      - GF_AUTH_DISABLE_LOGIN_FORM=false
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-    volumes:
-      - grafana_data:/var/lib/grafana
-    depends_on:
-      - prometheus
-    networks:
-      - monitoring_network
-      - app_network
-      - elk_network
 
 volumes:
-  postgres_data:
-    driver: local
-  pgadmin_data:
-    driver: local
-  grafana_data:
-    driver: local
-  elasticsearch_data:
-    driver: local
-  prometheus_data:
-    driver: local
   frontend_node_modules:
     driver: local
 
 networks:
-  elk_network:
-    driver: bridge
-  monitoring_network:
-    driver: bridge
   app_network:
     driver: bridge

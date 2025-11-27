@@ -35,10 +35,10 @@ public class PongService {
         // 2. Save the match
         PongMatch match = PongMatch.builder()
                 .userId(userId)
-                .mode(mode)
+                .mode(PongMatch.Mode.fromValue(mode)) // "one-player" → Mode.ONE_PLAYER
                 .score(request.getScore())
                 .opponentScore(request.getOpponentScore())
-                .winner(request.getWinner())
+                .winner(PongMatch.Winner.valueOf(request.getWinner())) // "player" → Winner.player
                 .duration(request.getDuration() != null ? request.getDuration() : 0)
                 .xpEarned(xpEarned)
                 .build();

@@ -1,11 +1,10 @@
 server:
-  port: 3000
+  port: 8080  # Changed from 3000 to 8080
 
 spring:
   datasource:
-    url: jdbc:sqlite:./transcendence.db
+    url: jdbc:sqlite:/app/data/ft_transcendence.db  # Docker path
     driver-class-name: org.sqlite.JDBC
-
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:

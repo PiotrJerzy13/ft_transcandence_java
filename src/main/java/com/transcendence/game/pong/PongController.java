@@ -1,4 +1,64 @@
 package com.transcendence.game.pong;
 
+import com.transcendence.game.pong.dto.PongHistoryResponse;
+import com.transcendence.game.pong.dto.PongScoreRequest;
+import com.transcendence.stats.dto.SaveScoreResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/pong")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PongController {
+
+    private final PongService pongService;
+
+    public PongController(PongService pongService) {
+        this.pongService = pongService;
+    }
+
+    /**
+     * Save Pong score
+     * POST /api/pong/score?mode=one-player
+     */
+    @PostMapping("/score")
+    public ResponseEntity<SaveScoreResponse> saveScore(
+            @RequestParam(defaultValue = "one-player") String mode,
+            @Valid @RequestBody PongScoreRequest request
+    ) {
+        // TODO: Replace with JWT userId after security is implemented
+        Long userId = 1L;
+
+        log.info("Saving Pong score for user {}: mode={}, score={}-{}, winner={}",
+                userId, mode, request.getScore(),
+                request.getOpponentScore(), request.getWinner());
+
+        SaveScoreResponse response = pongService.saveScore(userId, mode, request);
+
+        log.info("Pong score saved successfully. New XP: {}",
+                response.getUserStats().getXp());
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get Pong match history
+     * GET /api/pong/history
+     */
+    @GetMapping("/history")
+    public ResponseEntity<PongHistoryResponse> getHistory() {
+        Long userId = 1L;
+
+        log.info("Fetching Pong history for user {}", userId);
+
+        PongHistoryResponse response = pongService.getHistory(userId);
+
+        log.info("Retrieved {} Pong matches", response.getHistory().size());
+
+        return ResponseEntity.ok(response);
+    }
 }

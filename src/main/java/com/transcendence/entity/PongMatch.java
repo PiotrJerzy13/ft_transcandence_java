@@ -3,11 +3,7 @@ package com.transcendence.entity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 
 
 import java.time.LocalDateTime;
@@ -100,21 +96,14 @@ public class PongMatch {
     }
 
     // ---------- Enums + Converters ----------
-
+    @RequiredArgsConstructor
+    @Getter
     public enum Mode {
         ONE_PLAYER("one-player"),
         TWO_PLAYER("two-player");
 
-        private final String value;
-
-        Mode(String value) {
-            this.value = value;
-        }
-
         @JsonValue
-        public String getValue() {
-            return value;
-        }
+        private final String value;
 
         @Override
         public String toString() {
@@ -150,5 +139,6 @@ public class PongMatch {
             return dbData != null ? Mode.fromValue(dbData) : null;
         }
     }
+
 
 }

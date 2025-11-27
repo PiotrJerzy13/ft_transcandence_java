@@ -2,15 +2,11 @@ package com.transcendence.game.arkanoid.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.transcendence.entity.ArkanoidScore;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
-
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@Builder
 public class ArkanoidHistoryItemDto {
 
     private Integer score;
@@ -24,11 +20,11 @@ public class ArkanoidHistoryItemDto {
     private LocalDateTime createdAt;
 
     public static ArkanoidHistoryItemDto fromEntity(ArkanoidScore entity) {
-        ArkanoidHistoryItemDto dto = new ArkanoidHistoryItemDto();
-        dto.setScore(entity.getScore());
-        dto.setLevelReached(entity.getLevelReached());
-        dto.setXp(entity.getXpEarned());
-        dto.setCreatedAt(entity.getCreatedAt());
-        return dto;
+        return ArkanoidHistoryItemDto.builder()
+                .score(entity.getScore())
+                .levelReached(entity.getLevelReached())
+                .xp(entity.getXpEarned())
+                .createdAt(entity.getCreatedAt())
+                .build();
     }
 }
