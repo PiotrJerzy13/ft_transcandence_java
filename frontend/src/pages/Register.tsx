@@ -35,7 +35,7 @@ export default function Register() {
 }
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("http://localhost:8080/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,19 +47,33 @@ export default function Register() {
         }),
       });
 
-	if (!res.ok) {
-	let errorMessage = "Registration failed";
-	try {
-		const data = await res.json();
-		console.error("Registration failed - Server response:", data);
-		errorMessage = data?.error || data?.message || res.statusText || errorMessage;
-	} catch (parseError) {
-		console.error("Failed to parse error response:", parseError);
-		errorMessage = res.statusText || errorMessage;
-	}
+        if (!res.ok) {
+            let errorMessage = "Registration failed";
 
-	throw new Error(errorMessage);
-}
+            // 1. Check if the response content type is JSON
+            const contentType = res.headers.get("content-type");
+            const isJson = contentType && contentType.includes("application/json");
+
+            if (isJson) {
+                try {
+                    const data = await res.json();
+                    console.error("Registration failed - Server response:", data);
+                    // Assume the JSON response has an 'error' or 'message' field
+                    errorMessage = data?.error || data?.message || res.statusText || errorMessage;
+                } catch (parseError) {
+                    // Should rarely happen if Content-Type is correct
+                    console.error("Failed to parse JSON error response:", parseError);
+                }
+            } else {
+                // 2. If it's not JSON (e.g., plain text or HTML), use the status text
+                // If you want the plain text body, use await res.text() here.
+                // For now, let's use the status text.
+                console.error("Non-JSON error response from server.");
+                errorMessage = res.statusText;
+            }
+
+            throw new Error(errorMessage);
+        }
 
 
       navigate("/login");

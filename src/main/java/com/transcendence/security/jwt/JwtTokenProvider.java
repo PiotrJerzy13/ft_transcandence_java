@@ -1,6 +1,5 @@
 package com.transcendence.security.jwt;
 
-
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -9,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
@@ -23,49 +22,55 @@ public class JwtTokenProvider {
     private long jwtExpirationInMs;
 
     // Get the signing key from the secret string
-    private Key key() {
+    private SecretKey key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
     // --- 1. Generate Token ---
     public String generateToken(Authentication authentication) {
-        // Get the principal (user details) from the authenticated object
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String username = userDetails.getUsername();
+        Object principal = authentication.getPrincipal();
+        String username;
+
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            username = userDetails.getUsername();
+        } else if (principal instanceof String s) {
+            // e.g. when you create UsernamePasswordAuthenticationToken(username, ...)
+            username = s;
+        } else {
+            throw new IllegalStateException("Unsupported principal type: " + principal.getClass());
+        }
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
-        // Build the JWT
         return Jwts.builder()
-                .setSubject(username) // The unique identifier for the token (the username)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key(), SignatureAlgorithm.HS512) // Sign with the secret key
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(key())
                 .compact();
     }
 
     // --- 2. Get Username from Token ---
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key())
+        Claims claims = Jwts.parser()
+                .verifyWith(key())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
         return claims.getSubject();
     }
 
     // --- 3. Validate Token ---
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken);
+            Jwts.parser()
+                    .verifyWith(key())
+                    .build()
+                    .parseSignedClaims(authToken);
             return true;
-        } catch (MalformedJwtException ex) {
+        } catch (JwtException ex) {
             // Log this: Invalid JWT token
-        } catch (ExpiredJwtException ex) {
-            // Log this: Expired JWT token
-        } catch (UnsupportedJwtException ex) {
-            // Log this: Unsupported JWT token
         } catch (IllegalArgumentException ex) {
             // Log this: JWT claims string is empty
         }
