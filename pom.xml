@@ -61,6 +61,7 @@
             <scope>test</scope>
         </dependency>
 
+
         <!-- JWT Dependencies (MISSING IN YOUR POM) -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

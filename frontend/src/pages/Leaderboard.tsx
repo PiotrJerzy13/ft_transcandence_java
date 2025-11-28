@@ -26,7 +26,7 @@ export default function Leaderboard() {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await fetch('/api/leaderboard', {
+        const res = await fetch('http://localhost:8080/api/leaderboard', {
           credentials: 'include'
         });
         const data = await res.json();

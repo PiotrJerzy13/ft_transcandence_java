@@ -1,4 +1,8 @@
+// LeaderboardService.java
 package com.transcendence.leaderboard;
 
-public class LeaderboardService {
+import com.transcendence.leaderboard.dto.LeaderboardResponseDTO;
+
+public interface LeaderboardService {
+    LeaderboardResponseDTO getLeaderboard();
 }
