@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authFetch } from "../utils/api.ts";
 
 interface LeaderboardPlayer {
   id: number;
@@ -26,9 +27,7 @@ export default function Leaderboard() {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await fetch('/api/leaderboard', {
-          credentials: 'include'
-        });
+        const res = await authFetch('/leaderboard');
         const data = await res.json();
         if (res.ok && data.leaderboard) {
           setLeaderboard(data.leaderboard);

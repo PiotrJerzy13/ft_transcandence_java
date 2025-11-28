@@ -47,10 +47,10 @@ public class UserStats {
     private Integer level = 1;
     private Integer xp = 0;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false,insertable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false,insertable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Helper - real logic uses actual stats

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { usePlayerData } from "../context/PlayerDataContext.tsx";
+import { authFetch } from "../utils/api.ts";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -35,15 +36,15 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+          localStorage.setItem('jwtToken', data.token);
         console.log("✅ Login successful:", data);
         
         // Verify authentication is working before redirecting
         const verifyAuth = async () => {
           try {
             // const authCheck = await fetch("/api/user/me", {
-              const authCheck = await fetch("http://localhost:8080/api/user/me", {
-              credentials: "include",
-            });
+              const authCheck = await authFetch("/user/me");
+
             
             if (authCheck.ok) {
               console.log("✅ Authentication verified, triggering data fetch and redirecting to lobby");

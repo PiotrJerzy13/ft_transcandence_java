@@ -1,68 +1,91 @@
 package com.transcendence.auth;
 
+import com.transcendence.auth.dto.AuthResponse;
+import com.transcendence.auth.dto.LoginRequest;
+import com.transcendence.auth.dto.RegisterRequest;
 import com.transcendence.entity.User;
+import com.transcendence.security.jwt.JwtTokenProvider;
 import com.transcendence.user.UserRepository;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "https://localhost:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final AuthService authService;
+    private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository; // NEW FIELD
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public AuthController(AuthService authService,
+                          JwtTokenProvider tokenProvider,
+                          UserRepository userRepository) { // NEW INJECTION
+        this.authService = authService;
+        this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository; // ASSIGN
+    }
+
+    // POST /api/auth/register
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            User user = userRepository.findByUsername(request.username())
-                    .orElseGet(() -> {
-                        User newUser = new User();
-                        newUser.setUsername(request.username());
-                        newUser.setEmail(request.username() + "@test.com");
-                        newUser.setPasswordHash("dummy");
-                        newUser.setStatus("online");
+            // 1. Register user (hashes password, creates stats)
+            User user = authService.registerUser(registerRequest);
 
-                        String now = java.time.LocalDateTime.now().toString();
-                        newUser.setCreatedAt(now);
-                        newUser.setUpdatedAt(now);
+            // 2. Create the Authentication object manually for token generation
+            // Note: Since the user is new, we skip the AuthenticationManager login step
+            // and directly create a token with their details.
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    user.getUsername(),
+                    null // No password needed here, we just need the username
+            );
 
-                        return userRepository.save(newUser);
-                    });
+            // 3. Generate JWT
+            String token = tokenProvider.generateToken(authentication);
 
-            response.addCookie(createCookie("userId", user.getId().toString()));
-            response.addCookie(createCookie("username", user.getUsername()));
+            // 4. Return the required AuthResponse (201 Created)
+            AuthResponse response = new AuthResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    token
+            );
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Login successful",
-                    "user", Map.of(
-                            "id", user.getId(),
-                            "username", user.getUsername(),
-                            "email", user.getEmail(),
-                            "status", user.getStatus()
-                    )
-            ));
-        } catch (Exception e) {
-            e.printStackTrace();  // Log to console
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Login failed: " + e.getMessage()
-            ));
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            // This catches the 'Username already taken' or 'Email already in use' logic
+            return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
     }
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        // 1. Authenticate user via AuthService
+        String token = authService.authenticateUser(loginRequest);
 
-    private jakarta.servlet.http.Cookie createCookie(String name, String value) {
-        jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(86400); // 24 hours
-        return cookie;
+        // 2. Fetch the User entity to populate the response DTO
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found after successful authentication."));
+
+        // 3. Return the AuthResponse (200 OK)
+        AuthResponse response = new AuthResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                token
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
-
-// DTO for login request
-record LoginRequest(String username, String password) {}
