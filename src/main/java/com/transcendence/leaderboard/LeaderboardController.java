@@ -2,7 +2,6 @@
 package com.transcendence.leaderboard;
 
 import com.transcendence.leaderboard.dto.LeaderboardResponseDTO;
-import com.transcendence.leaderboard.LeaderboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

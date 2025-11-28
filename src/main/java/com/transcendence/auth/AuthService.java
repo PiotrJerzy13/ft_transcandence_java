@@ -68,7 +68,6 @@ public class AuthService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .avatarUrl("default.png") // Default value
                 .status("online")        // Default value
-                // Notice: createdAt and updatedAt are NOT included here.
                 .build();
 
         // 2. Save User

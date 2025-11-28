@@ -12,6 +12,4 @@ public interface ArkanoidScoreRepository extends JpaRepository<ArkanoidScore, Lo
     // Get score history for a user (most recent first)
     List<ArkanoidScore> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    // Count total games
-    long countByUserId(Long userId);
 }

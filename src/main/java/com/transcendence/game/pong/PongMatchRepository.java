@@ -12,6 +12,4 @@ public interface PongMatchRepository extends JpaRepository<PongMatch, Long> {
     // Get match history for a user (most recent first)
     List<PongMatch> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    // Count total matches
-    long countByUserId(Long userId);
 }

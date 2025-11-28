@@ -41,7 +41,7 @@ public class ArkanoidService {
 
         arkanoidScoreRepository.save(score);
 
-        // 3. Update stats (Arkanoid is treated as win in Node: isWin = true)
+        // 3. Update stats
         UserStats updatedStats = userStatsService.updateAfterGame(
                 userId,
                 true,                      // isWin
@@ -49,7 +49,7 @@ public class ArkanoidService {
                 xpEarned                   // xpEarned from client
         );
 
-        // 4. Build response (achievements skipped → empty list)
+        // 4. Build response
         return new SaveScoreResponse(
                 true,
                 "Score saved successfully",

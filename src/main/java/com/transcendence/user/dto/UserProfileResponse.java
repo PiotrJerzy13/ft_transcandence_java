@@ -10,7 +10,7 @@ public class UserProfileResponse {
 
     private UserDto user;
     private UserStatsDto stats;
-    private Object[] achievements; // always empty
+    private Object[] achievements; // always empty for now
 
     @Getter
     @AllArgsConstructor

@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,14 +23,14 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtTokenProvider tokenProvider;
-    private final UserRepository userRepository; // NEW FIELD
+    private final UserRepository userRepository;
 
     public AuthController(AuthService authService,
                           JwtTokenProvider tokenProvider,
-                          UserRepository userRepository) { // NEW INJECTION
+                          UserRepository userRepository) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
-        this.userRepository = userRepository; // ASSIGN
+        this.userRepository = userRepository;
     }
 
     // POST /api/auth/register

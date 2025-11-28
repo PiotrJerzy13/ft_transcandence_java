@@ -1,5 +1,4 @@
 // arkanoid.ts
-import { calculateGameOverXp, calculateLevelXp } from "./xpCalculator.ts";
 
 interface GameSettings {
     canvasWidth: number;

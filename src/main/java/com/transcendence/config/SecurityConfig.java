@@ -33,7 +33,6 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    // New: Expose the AuthenticationManager for use in the AuthController/Service
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -64,7 +63,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 );
 
-        // Add the JWT filter *before* the standard Spring Security filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
