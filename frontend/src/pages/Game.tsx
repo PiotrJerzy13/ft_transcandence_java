@@ -3,6 +3,7 @@ import { Pong } from "./pong.ts";
 import { useNavigate } from "react-router-dom";
 import { useToasts } from '../context/ToastContext.tsx';
 import { usePlayerData } from '../context/PlayerDataContext.tsx';
+import { authFetch } from '../utils/api.ts';
 
 export default function Game() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -115,26 +116,33 @@ export default function Game() {
     try {
       const gameState = pongGameRef.current.getState();
       const isWinner = winner.includes('You') || winner.includes('Player 1');
-      const xpEarned = isWinner 
+      const xpEarned = isWinner
         ? calculateWinXp(gameState.playerScore, gameState.opponentScore)
         : calculateLossXp(gameState.playerScore);
-      
+
       showXpGain(xpEarned);
 
       // The duration would be calculated from the start of the game
       const durationInSeconds = 60; // Example: 60 seconds
 
-      const response = await fetch('http://localhost:8080/api/pong/score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          score: gameState.playerScore,
-          opponentScore: gameState.opponentScore,
-          winner: isWinner ? 'player' : 'opponent',
-          xpEarned: xpEarned,
-          duration: durationInSeconds,
-          isPerfectGame: isWinner && gameState.opponentScore === 0,
+        const tokenCheck = localStorage.getItem('jwtToken');
+        if (!tokenCheck) {
+            console.error("CRITICAL: JWT Token is missing from localStorage!");
+            addToast({ message: "Session expired. Please log in again.", type: 'error' });
+            navigate("/login"); // Force redirect if token is gone
+            return;
+        }
+        const response = await authFetch(`/pong/score?mode=${gameMode}`, {
+            method: 'POST',
+            // authFetch already sets Content-Type, but it's safe to include in options
+            // REMOVE: credentials: 'include' (authFetch handles security)
+            body: JSON.stringify({
+                score: gameState.playerScore,
+                opponentScore: gameState.opponentScore,
+                winner: isWinner ? 'player' : 'opponent',
+                xpEarned: xpEarned,
+                duration: durationInSeconds,
+                isPerfectGame: isWinner && gameState.opponentScore === 0,
         }),
       });
 
@@ -144,9 +152,9 @@ export default function Game() {
 
       const data = await response.json();
       console.log('Score saved:', data);
-      
+
       // Refetch the shared player data after the game is saved.
-      refetchPlayerData(); 
+      refetchPlayerData();
 
       if (data.newAchievements && data.newAchievements.length > 0) {
         data.newAchievements.forEach((ach: import('../types.ts').Achievement) => {
@@ -161,15 +169,14 @@ export default function Game() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/pong/history', {
+        const response = await authFetch('/pong/history', {
         method: 'GET',
-        credentials: 'include',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log('🎮 Pong Score History:', data.history);
       setHistory(data.history);

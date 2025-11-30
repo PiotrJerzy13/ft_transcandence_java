@@ -41,7 +41,7 @@ public class PongService {
                 .mode(PongMatch.Mode.fromValue(mode)) // "one-player" → Mode.ONE_PLAYER
                 .score(request.getScore())
                 .opponentScore(request.getOpponentScore())
-                .winner(PongMatch.Winner.valueOf(request.getWinner())) // "player" → Winner.player
+                .winner(PongMatch.Winner.valueOf(request.getWinner()))
                 .duration(request.getDuration() != null ? request.getDuration() : 0)
                 .xpEarned(xpEarned)
                 .build();

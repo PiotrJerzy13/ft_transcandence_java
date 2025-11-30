@@ -3,6 +3,10 @@ package com.transcendence.game.pong;
 import com.transcendence.game.pong.dto.PongHistoryResponse;
 import com.transcendence.game.pong.dto.PongScoreRequest;
 import com.transcendence.stats.dto.SaveScoreResponse;
+import com.transcendence.user.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +20,23 @@ import jakarta.validation.Valid;
 public class PongController {
 
     private final PongService pongService;
+    private final UserRepository userRepository;
 
-    public PongController(PongService pongService) {
+    public PongController(PongService pongService, UserRepository userRepository) { // NEW INJECTION
         this.pongService = pongService;
+        this.userRepository = userRepository;
+    }
+
+    private Long getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // The principal is the UserDetails object loaded during JWT validation
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+
+        // Look up the actual User ID (Long) from the repository
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found in database."))
+                .getId();
     }
 
     /**
@@ -30,8 +48,7 @@ public class PongController {
             @RequestParam(defaultValue = "one-player") String mode,
             @Valid @RequestBody PongScoreRequest request
     ) {
-        // TODO: Replace with JWT userId after security is implemented
-        Long userId = 1L;
+        Long userId = getAuthenticatedUserId();
 
         log.info("Saving Pong score for user {}: mode={}, score={}-{}, winner={}",
                 userId, mode, request.getScore(),
@@ -51,7 +68,7 @@ public class PongController {
      */
     @GetMapping("/history")
     public ResponseEntity<PongHistoryResponse> getHistory() {
-        Long userId = 1L;
+        Long userId = getAuthenticatedUserId();
 
         log.info("Fetching Pong history for user {}", userId);
 

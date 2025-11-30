@@ -1,6 +1,7 @@
 // src/hooks/usePlayerStats.ts
 import { useState, useEffect } from 'react';
 import type { PlayerStats } from '../types.ts';
+import { authFetch } from '../utils/api.ts';
 
 export const usePlayerStats = () => {
     const [stats, setStats] = useState<PlayerStats | null>(null);
@@ -9,12 +10,7 @@ export const usePlayerStats = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/user/profile', {
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const res = await authFetch('/user/profile');
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));

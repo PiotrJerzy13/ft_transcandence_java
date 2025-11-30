@@ -38,8 +38,8 @@ public class PongMatch {
     @Column(name = "opponent_score", nullable = false)
     private Integer opponentScore;
 
-    @Column(name = "winner", nullable = false)
-    private Winner winner;
+//    @Column(name = "winner", nullable = false)
+//    private Winner winner;
 
     @Column(name = "xp_earned")
     private Integer xpEarned = 0;
@@ -121,9 +121,13 @@ public class PongMatch {
         }
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "winner", nullable = false)
+    private Winner winner;
+
     public enum Winner {
-        player,
-        opponent
+        player,    // lowercase to match database constraint
+        opponent;  // lowercase to match database constraint
     }
 
     // JPA converters to map enums <-> DB TEXT (‘one-player’, ‘two-player’)

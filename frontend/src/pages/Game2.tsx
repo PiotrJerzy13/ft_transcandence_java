@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useToasts } from '../context/ToastContext.tsx';
 import { usePlayerAchievements } from '../hooks/usePlayerAchievements.ts';
 import { usePlayerData } from '../context/PlayerDataContext.tsx'; // Import player data context
+import { authFetch } from '../utils/api.ts';
 
 
 	export default function ArkanoidGame() {
@@ -21,7 +22,7 @@ import { usePlayerData } from '../context/PlayerDataContext.tsx'; // Import play
   const gameInstanceRef = useRef<Arkanoid | null>(null);
   const gameStartTimeRef = useRef<number | null>(null);
   const [sessionXp, setSessionXp] = useState(0);
-  const { 
+  const {
     history: arkanoidHistory, 
     loading: historyLoading, 
     error: historyError 
@@ -86,10 +87,8 @@ import { usePlayerData } from '../context/PlayerDataContext.tsx'; // Import play
     const saveArkanoidResult = async (finalScore: number, finalLevel: number, totalXpEarned: number, durationInSeconds: number) => {
       console.log(`[Arkanoid] Saving final result: Score=${finalScore}, Level=${finalLevel}, XP=${totalXpEarned}, Duration=${durationInSeconds}s`);
       try {
-        const response = await fetch('http://localhost:8080/api/arkanoid/score', {
+          const response = await authFetch('/arkanoid/score', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             score: finalScore,
             levelReached: finalLevel,

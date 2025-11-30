@@ -1,7 +1,8 @@
 // src/hooks/usePlayerAchievements.ts
 import { useState, useEffect } from 'react';
 import type { Achievement } from '../types.ts';
-import { defaultAchievements } from '../constants/achievements.ts'; // Move default achievements to constants
+import { defaultAchievements } from '../constants/achievements.ts';
+import { authFetch } from '../utils/api.ts';
 
 export const usePlayerAchievements = () => {
     const [achievements, setAchievements] = useState<Achievement[]>(defaultAchievements);
@@ -10,12 +11,7 @@ export const usePlayerAchievements = () => {
 
     const fetchAchievements = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/user/achievements', {
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const res = await authFetch('/user/achievements');
             
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
