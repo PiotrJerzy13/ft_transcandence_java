@@ -1,4 +1,4 @@
-# ./frontend/Dockerfile
+# ./frontend/Dockerfile1
 FROM node:18-alpine
 
 # Create a non-root user with a different UID
