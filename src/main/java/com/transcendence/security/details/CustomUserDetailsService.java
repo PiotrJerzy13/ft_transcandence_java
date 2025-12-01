@@ -31,11 +31,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
         // Map your User entity to Spring Security's UserDetails object.
-        // We are using the default UserDetails implementation here:
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
-                user.getPasswordHash(), // Important: This must be the hashed password
-                Collections.emptyList() // No special roles/authorities for now
+                user.getPasswordHash(),
+                Collections.emptyList()
         );
     }
 }

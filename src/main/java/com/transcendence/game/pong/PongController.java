@@ -22,7 +22,7 @@ public class PongController {
     private final PongService pongService;
     private final UserRepository userRepository;
 
-    public PongController(PongService pongService, UserRepository userRepository) { // NEW INJECTION
+    public PongController(PongService pongService, UserRepository userRepository) {
         this.pongService = pongService;
         this.userRepository = userRepository;
     }
@@ -33,7 +33,6 @@ public class PongController {
         // The principal is the UserDetails object loaded during JWT validation
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
 
-        // Look up the actual User ID (Long) from the repository
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found in database."))
                 .getId();

@@ -8,8 +8,8 @@ import com.transcendence.user.dto.UserMeResponse;
 import com.transcendence.user.dto.UserProfileResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication; // NEW IMPORT
-import org.springframework.security.core.context.SecurityContextHolder; // NEW IMPORT
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
@@ -29,7 +29,6 @@ public class UserController {
     private Long getAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // The principal is typically the UserDetails object we created in CustomUserDetailsService
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
 
         // Look up the actual User ID (Long) from the repository

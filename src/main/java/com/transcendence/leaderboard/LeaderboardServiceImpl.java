@@ -45,7 +45,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 .totalGames(stats.getTotalGames())
                 .wins(stats.getWins())
                 .losses(stats.getLosses())
-                .xp(stats.getXp().longValue()) // Convert Integer to Long for consistency
+                .xp(stats.getXp().longValue())
                 .bestStreak(stats.getBestStreak())
                 .winRate(winRate)
                 .build();

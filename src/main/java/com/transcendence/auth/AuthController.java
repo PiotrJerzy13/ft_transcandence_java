@@ -41,11 +41,9 @@ public class AuthController {
             User user = authService.registerUser(registerRequest);
 
             // 2. Create the Authentication object manually for token generation
-            // Note: Since the user is new, we skip the AuthenticationManager login step
-            // and directly create a token with their details.
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     user.getUsername(),
-                    null // No password needed here, we just need the username
+                    null
             );
 
             // 3. Generate JWT
@@ -64,7 +62,6 @@ public class AuthController {
         } catch (RuntimeException e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", e.getMessage());
-            // This catches the 'Username already taken' or 'Email already in use' logic
             return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
     }

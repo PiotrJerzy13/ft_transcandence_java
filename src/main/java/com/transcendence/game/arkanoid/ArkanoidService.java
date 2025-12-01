@@ -44,9 +44,9 @@ public class ArkanoidService {
         // 3. Update stats
         UserStats updatedStats = userStatsService.updateAfterGame(
                 userId,
-                true,                      // isWin
-                score.getDuration(),       // duration
-                xpEarned                   // xpEarned from client
+                true,
+                score.getDuration(),
+                xpEarned
         );
 
         // 4. Build response

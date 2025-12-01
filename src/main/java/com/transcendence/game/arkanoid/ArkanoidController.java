@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 @Slf4j
 @RestController
 @RequestMapping("/api/arkanoid")
-@CrossOrigin(origins = "http://localhost:5173")  // Allow React dev server
+@CrossOrigin(origins = "http://localhost:5173")
 public class ArkanoidController {
 
     private final ArkanoidService arkanoidService;

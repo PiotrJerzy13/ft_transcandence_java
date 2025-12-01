@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @Data
-@NoArgsConstructor // Required by JPA
+@NoArgsConstructor
 public class User {
 
     @Id

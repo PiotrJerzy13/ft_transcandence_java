@@ -53,11 +53,6 @@ public class UserStats {
     @Column(name = "updated_at", nullable = false,insertable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Helper - real logic uses actual stats
-    public double getWinRate() {
-        if (totalGames == 0) return 0.0;
-        return (double) wins / totalGames;
-    }
 //lowercase because db expects it in that way
     public enum Rank {
         Novice,

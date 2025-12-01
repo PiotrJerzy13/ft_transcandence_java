@@ -66,14 +66,12 @@ public class AuthService {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .avatarUrl("default.png") // Default value
-                .status("online")        // Default value
+                .avatarUrl("default.png")
+                .status("online")
                 .build();
 
         // 2. Save User
         User savedUser = userRepository.save(newUser);
-
-        // 3. Create initial stats using the service you provided
         userStatsService.createInitialStats(savedUser);
 
         return savedUser;

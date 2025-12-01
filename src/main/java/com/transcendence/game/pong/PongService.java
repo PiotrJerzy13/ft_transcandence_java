@@ -19,7 +19,6 @@ public class PongService {
     private final PongMatchRepository pongMatchRepository;
     private final UserStatsService userStatsService;
 
-    // Constructor injection - no @Autowired needed!
     public PongService(PongMatchRepository pongMatchRepository,
                        UserStatsService userStatsService) {
         this.pongMatchRepository = pongMatchRepository;
@@ -56,7 +55,6 @@ public class PongService {
                 xpEarned
         );
 
-        // 4. Return response (achievements always empty)
         return new SaveScoreResponse(
                 true,
                 "Score saved successfully",

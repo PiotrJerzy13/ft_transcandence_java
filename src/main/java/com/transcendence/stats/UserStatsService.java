@@ -69,12 +69,4 @@ public class UserStatsService {
 
         return userStatsRepository.save(stats);
     }
-
-    /**
-     * Get stats
-     */
-    public UserStats getStatsByUserId(Long userId) {
-        return userStatsRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("User stats not found"));
-    }
 }
