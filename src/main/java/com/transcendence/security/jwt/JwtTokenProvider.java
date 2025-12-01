@@ -15,7 +15,6 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    // Inject the secret key and expiration time from application.properties
     @Value("${jwt.secret}")
     private String jwtSecret;
 
