@@ -57,6 +57,7 @@ public class SecurityConfig {
 
                 // Define authorization rules
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**").permitAll()
                         // Public endpoints (login, register)
                         .requestMatchers("/api/auth/**").permitAll()
                         // All other endpoints require authentication

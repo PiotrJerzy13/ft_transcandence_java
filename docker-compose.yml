@@ -10,6 +10,7 @@ services:
       - ./data:/data
       - ./certs:/certs
       - maven_cache:/root/.m2
+      - ./logs:/app/logs
     environment:
       - SPRING_DATASOURCE_URL=jdbc:sqlite:/data/ft_transcendence.db
       - SPRING_PROFILES_ACTIVE=docker
@@ -50,10 +51,100 @@ services:
     networks:
       - app_network
 
+  # Prometheus - Collects metrics from backend
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ft_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Grafana - Visualizes metrics from Prometheus
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ft_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=
+    networks:
+      - app_network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Elasticsearch - Stores logs
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ft_elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Logstash - Processes and sends logs to Elasticsearch
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: ft_logstash
+    ports:
+      - "5044:5000"
+      - "9600:9600"
+    volumes:
+      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logs:/logs
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+    networks:
+      - app_network
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+
+  # Kibana - Visualizes logs from Elasticsearch
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: ft_kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - app_network
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+
 volumes:
   frontend_node_modules:
     driver: local
   maven_cache:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
     driver: local
 
 networks:
