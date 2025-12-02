@@ -92,3 +92,93 @@ The project uses Hibernate as the JPA provider. Database access is managed entir
 
   * **Database:** `application.properties` points to a local SQLite file.
   * **Schema:** The database schema is managed automatically by Hibernate (`spring.jpa.hibernate.ddl-auto=update` or `validate`).
+
+    -----
+
+## 📊 Monitoring and Observability
+
+The platform includes a comprehensive monitoring stack using **Prometheus**, **Grafana**, and the **ELK Stack** (Elasticsearch, Logstash, Kibana), providing real-time metrics collection, visualization, and centralized log management.
+
+-----
+
+### 🔧 Configuration
+
+All monitoring components are pre-configured in `docker-compose.yml` and rely on configuration files in the `./monitoring` directory.
+
+| Component | Port | Purpose |
+| :--- | :--- | :--- |
+| **Prometheus** | `9090` | Metrics collection. Scrapes the Spring Boot backend's `/actuator/prometheus` endpoint. |
+| **Grafana** | `3000` | Metrics visualization. Pulls time-series data from Prometheus for dashboards. |
+| **Elasticsearch** | `9200` | Log storage. Centralized store for structured application logs. |
+| **Logstash** | N/A | Log processing. Reads logs from `./logs/spring.log`, applies Grok filtering, and ships to Elasticsearch. |
+| **Kibana** | `5601` | Log visualization. Web UI for searching and analyzing logs stored in Elasticsearch. |
+| **SQLite Web UI** | `8086` | Database browser. Interactive interface for exploring the SQLite database. |
+
+-----
+
+### 🌐 Access the Monitoring Dashboards
+
+| Dashboard | URL | Credentials |
+| :--- | :--- | :--- |
+| **Prometheus UI** | [http://localhost:9090](http://localhost:9090) | N/A |
+| **Grafana UI** | [http://localhost:3000](http://localhost:3000) | `admin` / `admin` |
+| **Kibana UI** | [http://localhost:5601](http://localhost:5601) | N/A |
+| **SQLite Web UI** | [http://localhost:8086](http://localhost:8086) | N/A |
+
+-----
+
+### ⚙️ Backend Instrumentation
+
+The Spring Boot backend is automatically instrumented for metrics and logging:
+
+#### 1. **Metrics Collection**
+The backend exposes health and performance metrics via **Spring Boot Actuator**, including:
+- JVM memory usage and garbage collection stats
+- HTTP request latency and throughput
+- Database connection pool usage
+- Custom application metrics
+
+Prometheus scrapes the `/actuator/prometheus` endpoint every few seconds to collect these metrics.
+
+#### 2. **Centralized Logging**
+All application logs are written to the host volume `./logs/spring.log`. **Logstash** continuously reads this file and:
+- Parses log entries using **Grok filters** to extract structured fields (timestamp, log level, message)
+- Enriches log data with metadata
+- Ships parsed logs to **Elasticsearch** for indexing and storage
+
+-----
+
+### ✅ Verification Steps
+
+To confirm the full monitoring and logging pipeline is operational:
+
+#### **1. Metrics Check (Prometheus)**
+1. Navigate to [http://localhost:9090](http://localhost:9090)
+2. Go to **Status → Targets**
+3. Verify that the target `ft_backend` shows status **UP**
+4. Test a query: Enter `jvm_memory_used_bytes` in the expression browser to view JVM memory metrics
+
+#### **2. Dashboards Check (Grafana)**
+1. Navigate to [http://localhost:3000](http://localhost:3000)
+2. Login with credentials: `admin` / `admin`
+3. Explore pre-configured dashboards for application metrics and performance monitoring
+
+#### **3. Log Check (Kibana)**
+1. Navigate to [http://localhost:5601](http://localhost:5601)
+2. Go to **Discover**
+3. Select the `spring-logs-*` data view
+4. Verify that structured application logs are flowing in real-time with parsed fields (`timestamp`, `log_message`, etc.)
+5. No `_grokparsefailure` or `_dateparsefailure` tags should appear in the logs
+
+-----
+
+### 🐛 Troubleshooting
+
+| Issue | Solution |
+| :--- | :--- |
+| Prometheus shows target as **DOWN** | Check that the backend is running and `/actuator/prometheus` is accessible at `http://localhost:8080/actuator/prometheus` |
+| Logs not appearing in Kibana | Verify Logstash is running: `docker logs ft_logstash`. Check for Grok parsing errors in Logstash output. |
+| `_grokparsefailure` tags in logs | Review the Grok pattern in `./monitoring/logstash/logstash.conf` to ensure it matches your log format. |
+| Grafana shows "No Data" | Confirm Prometheus is scraping metrics successfully and that the data source is configured correctly in Grafana. |
+
+-----
