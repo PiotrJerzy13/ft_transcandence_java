@@ -12,7 +12,7 @@ export default function Game() {
   const navigate = useNavigate();
   
   const [score, setScore] = useState({ left: 0, right: 0 });
-  const [gameState, setGameState] = useState('menu'); // 'menu', 'playing', 'paused', 'gameOver'
+  const [gameState, setGameState] = useState('menu');
   const [winner, setWinner] = useState('');
   const [gameMode, setGameMode] = useState<'one-player' | 'two-player'>('one-player');
   const [history, setHistory] = useState<{ mode: string; score: number; opponent_score: number; winner: string; created_at: string }[]>([]);
@@ -59,7 +59,6 @@ export default function Game() {
 	navigate("/lobby");
   };
 
-  // XP calculation functions (same as before)
   const calculateWinXp = (score: number, opponentScore: number): number => {
     const baseXp = 100;
     const scoreBonus = Math.floor(score / 2);
