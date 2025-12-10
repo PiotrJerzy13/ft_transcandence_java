@@ -1,4 +1,4 @@
-// LeaderboardService.java
+
 package com.transcendence.leaderboard;
 
 import com.transcendence.leaderboard.dto.LeaderboardResponseDTO;
