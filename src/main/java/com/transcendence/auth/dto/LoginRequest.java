@@ -1,8 +1,10 @@
 package com.transcendence.auth.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 
+@AllArgsConstructor
 @Data
 public class LoginRequest {
 
