@@ -1,0 +1,41 @@
+services:
+  backend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    container_name: ft_backend_test
+    volumes:
+      - ./target:/app/target
+      - maven_cache:/root/.m2
+    command: mvn test -Dtest='!**/TranscendenceApplicationTests'
+    networks:
+      - app_network
+    profiles:
+      - test
+
+  # New service for coverage report generation
+  backend-coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    container_name: ft_backend_coverage
+    volumes:
+      - ./target:/app/target
+      - maven_cache:/root/.m2
+    command: >
+      sh -c "mvn test -Dtest='!**/TranscendenceApplicationTests' && 
+             mvn jacoco:report"
+    networks:
+      - app_network
+    profiles:
+      - coverage
+
+volumes:
+  maven_cache:
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge
