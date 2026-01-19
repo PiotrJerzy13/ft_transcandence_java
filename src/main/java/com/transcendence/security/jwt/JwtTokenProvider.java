@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Slf4j
@@ -74,5 +76,19 @@ public class JwtTokenProvider {
             log.error("Invalid token: {}", ex.getMessage());
         }
         return false;
+    }
+
+    public LocalDateTime getExpiryDateFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(key()) // Use key() method you already defined
+                .build()
+                .parseSignedClaims(token)
+                .getPayload(); // In JJWT 0.12+, getBody() is now getPayload()
+
+        // Convert the java.util.Date to LocalDateTime
+        return claims.getExpiration()
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 }

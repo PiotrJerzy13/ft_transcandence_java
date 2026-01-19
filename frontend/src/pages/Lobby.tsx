@@ -9,6 +9,7 @@ import GameHistorySection from './components/GameHistorySection.tsx';
 import PlayerProfileSidebar from './components/PlayerProfileSidebar.tsx';
 import LobbyActions from './components/LobbyActions.tsx';
 import { useNavigate } from 'react-router-dom';
+import {authFetch} from "../utils/api.ts";
 
 export default function GameLobby() {
   const navigate = useNavigate();
@@ -26,16 +27,23 @@ export default function GameLobby() {
     navigate(mode === 'pong' ? '/game' : '/game2');
   };
 
-  const handleLogout = async () => {
-    try {
-      const res = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      if (res.ok) navigate('/login', { replace: true });
-      else alert('Logout failed');
-    } catch (err) {
-      console.error('Logout error:', err);
-      alert('Logout error');
-    }
-  };
+    const handleLogout = async () => {
+        try {
+            const res = await authFetch('/auth/logout', {  // Use authFetch
+                method: 'POST'
+            });
+
+            if (res.ok) {
+                localStorage.removeItem('jwtToken');
+                navigate('/login', { replace: true });
+            } else {
+                alert('Logout failed');
+            }
+        } catch (err) {
+            console.error('Logout error:', err);
+            alert('Logout error');
+        }
+    };
 
   const getRankColor = (rank: string) => {
     const colors: Record<string, string> = {

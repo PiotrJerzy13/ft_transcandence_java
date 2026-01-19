@@ -1,5 +1,6 @@
 package com.transcendence.security.jwt;
 
+import com.transcendence.auth.BlacklistedTokenRepository;
 import com.transcendence.security.details.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,11 +21,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
 
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider,
-                               CustomUserDetailsService customUserDetailsService) {
+                               CustomUserDetailsService customUserDetailsService,
+                                   BlacklistedTokenRepository blacklistedTokenRepository) {
     this.tokenProvider = tokenProvider;
     this.customUserDetailsService = customUserDetailsService;
+    this.blacklistedTokenRepository = blacklistedTokenRepository;
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
@@ -44,20 +48,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                // 1. Check Blacklist FIRST
+                if (blacklistedTokenRepository.existsByToken(jwt)) {
+                    logger.warn("Blacklisted token access attempted");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return; // Stop the filter chain here
+                }
 
-                // Load user data from the database
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                // 2. Continue with standard validation
+                if (tokenProvider.validateToken(jwt)) {
+                    String username = tokenProvider.getUsernameFromToken(jwt);
+                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-                // Create an authentication object
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // Set authentication in the security context
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);

@@ -21,15 +21,15 @@ export default defineConfig({
         }),
         proxy: {
             '/api': {
-                target: 'http://localhost:8080',
+                // CHANGE THIS: 'localhost' -> 'backend'
+                target: 'http://backend:8080',
                 changeOrigin: true,
                 secure: false,
-                rewrite: (path) => path  // Keep the /api prefix
+                rewrite: (path) => path
             }
         }
     },
     css: {
         postcss: './postcss.config.cjs'
     }
-
 })
