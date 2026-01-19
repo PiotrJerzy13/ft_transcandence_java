@@ -16,9 +16,8 @@ import java.time.LocalDateTime;
 public class LogoutController {
 
     private final BlacklistedTokenRepository blacklistRepository;
-    private final JwtTokenProvider tokenProvider; // Add this
+    private final JwtTokenProvider tokenProvider;
 
-    // Update constructor to inject JwtTokenProvider
     public LogoutController(BlacklistedTokenRepository blacklistRepository,
                             JwtTokenProvider tokenProvider) {
         this.blacklistRepository = blacklistRepository;
@@ -32,13 +31,11 @@ public class LogoutController {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            // Validate token BEFORE trying to parse it
             if (!tokenProvider.validateToken(token)) {
                 return ResponseEntity.badRequest().body("Invalid or expired token");
             }
 
             try {
-                // Now safe to get expiry date
                 LocalDateTime expiry = tokenProvider.getExpiryDateFromToken(token);
 
                 BlacklistedToken blacklistedToken = BlacklistedToken.builder()
@@ -53,7 +50,6 @@ public class LogoutController {
                 return ResponseEntity.badRequest().body("Error processing token");
             }
         }
-
         return ResponseEntity.badRequest().body("No valid token found");
     }
 }

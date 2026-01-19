@@ -11,5 +11,8 @@ public interface BlacklistedTokenRepository extends JpaRepository<BlacklistedTok
 
     boolean existsByToken(String token);
 
+    // TODO: Implement scheduled cleanup service to automatically remove expired tokens
+    //  This will prevent database bloat by periodically deleting tokens past their expiry date
+    //  Consider using @Scheduled annotation with cron expression
     void deleteByExpiryDateBefore(LocalDateTime dateTime);
 }

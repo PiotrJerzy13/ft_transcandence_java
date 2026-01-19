@@ -49,14 +49,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt)) {
-                // 1. Check Blacklist FIRST
+                // Check Blacklist
                 if (blacklistedTokenRepository.existsByToken(jwt)) {
                     logger.warn("Blacklisted token access attempted");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    return; // Stop the filter chain here
+                    return;
                 }
 
-                // 2. Continue with standard validation
                 if (tokenProvider.validateToken(jwt)) {
                     String username = tokenProvider.getUsernameFromToken(jwt);
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
