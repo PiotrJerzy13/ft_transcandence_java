@@ -12,6 +12,6 @@ public interface UserStatsRepository extends JpaRepository<UserStats, Long> {
 
     Optional<UserStats> findByUserId(Long userId);
 
-    // This sorts by XP descending, then by level descending (as tiebreaker)
+    // This sorts by XP descending, then by level descending
     List<UserStats> findAllByOrderByXpDescLevelDesc();
 }

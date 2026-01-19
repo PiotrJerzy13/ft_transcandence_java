@@ -18,15 +18,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Locates the user based on the username.
-     * @param username The username (or email) identifying the user whose data is required.
-     * @return A fully populated user record (UserDetails)
-     * @throws UsernameNotFoundException if the user could not be found or the user has no GrantedAuthority
-     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Find the user by username
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 

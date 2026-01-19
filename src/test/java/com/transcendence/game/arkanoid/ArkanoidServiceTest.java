@@ -63,6 +63,7 @@ class ArkanoidServiceTest {
                 .rank(UserStats.Rank.Novice)
 
                 .build();
+
     }
 
     @Test
@@ -105,5 +106,7 @@ class ArkanoidServiceTest {
         assertEquals(mockUpdatedUserStats.getLevel(), responseStats.getLevel());
         assertEquals(mockUpdatedUserStats.getXp(), responseStats.getXp()); // Using 'getXp' instead of 'getTotalXp'
     }
+
+
 
 }

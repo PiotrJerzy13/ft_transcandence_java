@@ -21,7 +21,7 @@ export default defineConfig({
         }),
         proxy: {
             '/api': {
-                target: 'http://localhost:8080',  // Changed to your Java backend
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path  // Keep the /api prefix

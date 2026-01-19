@@ -15,13 +15,9 @@ public class UserStatsService {
         this.userStatsRepository = userStatsRepository;
     }
 
-    /**
-     * Create initial stats for a new user
-     * Must receive a User entity, not userId
-     */
     public UserStats createInitialStats(User user) {
         UserStats stats = UserStats.builder()
-                .user(user)   // <— FIXED
+                .user(user)
                 .totalGames(0)
                 .wins(0)
                 .losses(0)
@@ -36,9 +32,6 @@ public class UserStatsService {
         return userStatsRepository.save(stats);
     }
 
-    /**
-     * Update stats after a game
-     */
     public UserStats updateAfterGame(Long userId, boolean won, int duration, int xpEarned) {
 
         UserStats stats = userStatsRepository.findByUserId(userId)
@@ -64,7 +57,6 @@ public class UserStatsService {
         int newLevel = (int) Math.floor(Math.sqrt(newXp / 100.0)) + 1;
         stats.setLevel(newLevel);
 
-        // Rank stays unchanged (Novice)
         stats.setRank(UserStats.Rank.Novice);
 
         return userStatsRepository.save(stats);

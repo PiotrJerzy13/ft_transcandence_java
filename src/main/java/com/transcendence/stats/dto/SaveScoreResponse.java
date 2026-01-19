@@ -14,6 +14,6 @@ import java.util.List;
 public class SaveScoreResponse {
     private Boolean success;
     private String message;
-    private List<Object> newAchievements;  // Always empty array for now
+    private List<Object> newAchievements;
     private UserStatsDto userStats;
 }

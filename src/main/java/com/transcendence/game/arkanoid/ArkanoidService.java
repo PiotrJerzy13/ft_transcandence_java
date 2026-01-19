@@ -25,7 +25,7 @@ public class ArkanoidService {
     }
 
     public SaveScoreResponse saveScore(Long userId, ArkanoidScoreRequest request) {
-        // 1. XP comes from frontend (to match Node)
+
         int xpEarned = request.getXpEarned();
 
         // 2. Save score row

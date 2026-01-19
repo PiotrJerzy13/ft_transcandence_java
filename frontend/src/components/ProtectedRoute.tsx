@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { usePlayerData } from "../context/PlayerDataContext.tsx";
-import { authFetch } from "../utils/api.ts"; // <-- Import is correct
+import { authFetch } from "../utils/api.ts";
 
 export default function ProtectedRoute({ children }: { children: React.ReactElement }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);

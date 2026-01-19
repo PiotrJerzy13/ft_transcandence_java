@@ -37,7 +37,7 @@ public class AuthService {
     }
 
     public String authenticateUser(LoginRequest loginRequest) {
-        // Use the AuthenticationManager to verify credentials
+        // Use Spring AuthenticationManager to verify credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -48,9 +48,6 @@ public class AuthService {
         return tokenProvider.generateToken(authentication);
     }
 
-    /**
-     * Handles user registration, hashing the password and creating initial stats.
-     */
     @Transactional
     public User registerUser(RegisterRequest request) {
         // Check for existing user (for 409 Conflict)
@@ -61,7 +58,7 @@ public class AuthService {
             throw new RuntimeException("Email already in use.");
         }
 
-        // 1. Create User entity
+        // Create User entity
         User newUser = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -70,7 +67,6 @@ public class AuthService {
                 .status("online")
                 .build();
 
-        // 2. Save User
         User savedUser = userRepository.save(newUser);
         userStatsService.createInitialStats(savedUser);
 

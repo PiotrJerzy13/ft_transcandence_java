@@ -18,7 +18,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
     @Override
     public LeaderboardResponseDTO getLeaderboard() {
-        // Get top 100 players sorted by XP
+
         List<UserStats> topPlayers = userStatsRepository.findAllByOrderByXpDescLevelDesc();
 
         List<LeaderboardPlayerDTO> leaderboard = topPlayers.stream()

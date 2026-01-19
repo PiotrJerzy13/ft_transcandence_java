@@ -22,10 +22,7 @@ public class ArkanoidController {
     private final ArkanoidService arkanoidService;
     private final UserRepository userRepository;
 
-    /**
-     * Save Arkanoid score
-     * POST /api/arkanoid/score
-     */
+
     public ArkanoidController (ArkanoidService arkanoidService, UserRepository userRepository){
         this.arkanoidService = arkanoidService;
         this.userRepository = userRepository;

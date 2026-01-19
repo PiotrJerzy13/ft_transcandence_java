@@ -20,10 +20,10 @@ import static org.mockito.Mockito.*;
 class CustomUserDetailsServiceTest {
 
     @Mock
-    private UserRepository userRepository; // Mock the dependency
+    private UserRepository userRepository;
 
     @InjectMocks
-    private CustomUserDetailsService userDetailsService; // Inject mocks into the service under test
+    private CustomUserDetailsService userDetailsService;
 
     private final String MOCK_USERNAME = "testuser";
     private final String MOCK_PASSWORD_HASH = "mock_hash";

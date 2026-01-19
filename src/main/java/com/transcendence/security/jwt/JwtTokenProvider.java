@@ -26,15 +26,16 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
-    // --- 1. Generate Token ---
     public String generateToken(Authentication authentication) {
         Object principal = authentication.getPrincipal();
         String username;
 
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
             username = userDetails.getUsername();
+            // Case: Authenticated via standard provider (Login form).
         } else if (principal instanceof String s) {
-            // e.g. when you create UsernamePasswordAuthenticationToken(username, ...)
+            // Case: Manually authenticated (e.g., Post-registration).
+            // Supports raw String principals to avoid redundant DB lookups during account creation.
             username = s;
         } else {
             throw new IllegalStateException("Unsupported principal type: " + principal.getClass());
@@ -51,7 +52,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // --- 2. Get Username from Token ---
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(key())
@@ -61,7 +61,6 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // --- 3. Validate Token ---
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser()

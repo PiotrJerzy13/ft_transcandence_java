@@ -65,6 +65,7 @@ public class AuthController {
             return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
     }
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // 1. Authenticate user via AuthService

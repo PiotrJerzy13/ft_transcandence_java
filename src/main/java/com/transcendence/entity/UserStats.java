@@ -53,7 +53,6 @@ public class UserStats {
     @Column(name = "updated_at", nullable = false,insertable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-//lowercase because db expects it in that way
     public enum Rank {
         Novice,
         Amateur,

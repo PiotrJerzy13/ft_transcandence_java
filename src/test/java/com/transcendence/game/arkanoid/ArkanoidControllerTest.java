@@ -195,7 +195,6 @@ class ArkanoidControllerTest {
                 .andExpect(jsonPath("$.history").isEmpty());
     }
 
-    @Test
     void getHistory_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
         // ACT & ASSERT
         mockMvc.perform(get("/api/arkanoid/history"))
