@@ -1,6 +1,7 @@
 // Register.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { buildApiUrl } from "../utils/api.ts";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function Register() {
 }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/register", {
+      const res = await fetch(buildApiUrl("/auth/register"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,6 +1,11 @@
 // utils/api.ts
 
-const API_BASE_URL = "http://localhost:8080/api";
+const DEFAULT_API_BASE_URL = "http://localhost:8080/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL;
+
+export function buildApiUrl(endpoint: string): string {
+    return `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+}
 
 interface AuthFetchOptions extends RequestInit {
     credentials?: 'omit';
@@ -30,7 +35,7 @@ export async function authFetch(endpoint: string, options: AuthFetchOptions = {}
     }
 
     // Combine the base URL with the endpoint (including query params)
-    const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+    const url = buildApiUrl(endpoint);
 
     console.log('🌐 Fetching:', url);
     console.log('🔑 Has token:', !!token);

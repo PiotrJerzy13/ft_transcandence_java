@@ -1,7 +1,7 @@
 // frontend/src/context/AuthContext.tsx
 import { createContext, useState, useContext, useCallback, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { authFetch } from '../utils/api.ts';
+import { authFetch, buildApiUrl } from '../utils/api.ts';
 
 interface User {
     id: number;
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.log('[Auth] Attempting login...');
 
             // Don't use authFetch for login - it's not an authenticated endpoint
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            const response = await fetch(buildApiUrl('/auth/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
