@@ -18,23 +18,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Broadcasts go here (Server -> Many Clients)
-        config.enableSimpleBroker("/topic");
-
-        // Incoming messages go here (Client -> Server)
+        config.enableSimpleBroker("/topic", "/queue");
         config.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173", "https://localhost:5173")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
+        // Don't use .withSockJS() if you're using pure WebSocket
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        // Register the security interceptor
         registration.interceptors(jwtChannelInterceptor);
     }
 }

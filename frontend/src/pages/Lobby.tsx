@@ -9,18 +9,32 @@ import GameHistorySection from './components/GameHistorySection.tsx';
 import PlayerProfileSidebar from './components/PlayerProfileSidebar.tsx';
 import LobbyActions from './components/LobbyActions.tsx';
 import { useNavigate } from 'react-router-dom';
-import {authFetch} from "../utils/api.ts";
+import { authFetch } from "../utils/api.ts";
+import { useWebSocket } from "../hooks/useWebSocket.ts";
+import { useEffect, useRef, useState } from "react";
 
 export default function GameLobby() {
   const navigate = useNavigate();
+  const [messageDraft, setMessageDraft] = useState("");
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const isAtBottomRef = useRef(true);
 
   // --- Data fetching is now simpler ---
   const { playerData, loading: profileLoading, error: profileError } = usePlayerData();
   const { history: pongHistory, loading: pongLoading, error: pongError, stats: pongStats } = useGameHistory<PongGame>('pong');
   const { history: arkanoidHistory, loading: arkanoidLoading, error: arkanoidError, stats: arkanoidStats } = useGameHistory<ArkanoidScore>('arkanoid');
+  const { messages, sendMessage, isConnected, isConnecting, error: wsError } = useWebSocket();
 
   const loading = profileLoading || pongLoading || arkanoidLoading;
   const error = profileError || pongError || arkanoidError;
+
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    if (isAtBottomRef.current) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messages]);
 
   // --- Handlers stay here ---
   const handleGameModeSelect = (mode: 'pong' | 'arkanoid') => {
@@ -91,6 +105,30 @@ export default function GameLobby() {
 
   const rankColor = getRankColor(playerStats.rank);
 
+  const handleChatScroll = () => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isAtBottomRef.current = distanceFromBottom < 48;
+  };
+
+  const handleSendMessage = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = messageDraft.trim();
+    if (!trimmed) return;
+    sendMessage(trimmed, "CHAT");
+    setMessageDraft("");
+  };
+
+  const formatTimestamp = (value?: string) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+    return parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
   // --- The clean, composed layout ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 sm:p-6">
@@ -107,6 +145,55 @@ export default function GameLobby() {
                 arkanoidHistory={arkanoidHistory}
                 arkanoidStats={arkanoidStats}
             />
+            <section className="bg-black/40 border border-cyan-500/30 rounded-2xl p-4 sm:p-6 shadow-xl">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-cyan-200">Lobby Chat</h2>
+                <div className="text-xs text-cyan-200/70">
+                  {isConnecting ? "Connecting..." : isConnected ? "Connected" : "Disconnected"}
+                </div>
+              </div>
+              {wsError && (
+                <div className="mb-3 rounded-lg border border-red-500/30 bg-red-900/20 px-3 py-2 text-xs text-red-200">
+                  {wsError}
+                </div>
+              )}
+              <div
+                ref={chatContainerRef}
+                onScroll={handleChatScroll}
+                className="h-64 sm:h-72 overflow-y-auto rounded-xl bg-black/60 border border-cyan-500/20 p-3 space-y-3"
+              >
+                {messages.length === 0 && (
+                  <div className="text-sm text-cyan-100/60">No messages yet. Say hello!</div>
+                )}
+                {messages.map((message, index) => (
+                  <div key={`${message.sender}-${message.timestamp}-${index}`} className="text-sm">
+                    <div className="flex flex-wrap items-center gap-2 text-cyan-300">
+                      <span className="font-semibold">{message.sender}</span>
+                      {message.timestamp && (
+                        <span className="text-xs text-cyan-100/50">{formatTimestamp(message.timestamp)}</span>
+                      )}
+                    </div>
+                    <p className="text-cyan-100/80">{message.content}</p>
+                  </div>
+                ))}
+              </div>
+              <form onSubmit={handleSendMessage} className="mt-4 flex flex-col sm:flex-row gap-2">
+                <input
+                  value={messageDraft}
+                  onChange={(event) => setMessageDraft(event.target.value)}
+                  className="flex-1 rounded-lg border border-cyan-500/30 bg-black/50 px-3 py-2 text-sm text-cyan-100 placeholder:text-cyan-100/40 focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+                  placeholder={isConnected ? "Type a message..." : "Chat is offline"}
+                  disabled={!isConnected}
+                />
+                <button
+                  type="submit"
+                  disabled={!isConnected || !messageDraft.trim()}
+                  className="rounded-lg bg-cyan-500/80 px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Send
+                </button>
+              </form>
+            </section>
           </div>
 
           <PlayerProfileSidebar
