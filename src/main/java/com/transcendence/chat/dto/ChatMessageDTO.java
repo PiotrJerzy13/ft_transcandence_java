@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-@Data // This provides getters, setters, toString, equals, and hashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

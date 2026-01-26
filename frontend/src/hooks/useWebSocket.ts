@@ -13,14 +13,10 @@ export type ChatMessage = {
 type UseWebSocketOptions = {
     url?: string;
     autoConnect?: boolean;
-    historyTimeoutMs?: number;
 };
-
-const DEFAULT_HISTORY_TIMEOUT_MS = 1500;
 
 function buildWsUrl(): string {
     const base = API_BASE_URL.replace(/\/api\/?$/, "");
-    // Use wss:// for https://, ws:// for http://
     const wsBase = base.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://');
     return `${wsBase}/ws`;
 }
@@ -29,66 +25,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     const {
         url = import.meta.env.VITE_WS_URL || buildWsUrl(),
         autoConnect = true,
-        historyTimeoutMs = DEFAULT_HISTORY_TIMEOUT_MS,
     } = options;
 
     const clientRef = useRef<Client | null>(null);
     const reconnectAttemptRef = useRef(0);
-    const historyTimerRef = useRef<number | null>(null);
-    const pendingMessagesRef = useRef<ChatMessage[]>([]);
 
     const [isConnected, setIsConnected] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [historyLoaded, setHistoryLoaded] = useState(false);
-
-    const clearHistoryTimer = useCallback(() => {
-        if (historyTimerRef.current !== null) {
-            window.clearTimeout(historyTimerRef.current);
-            historyTimerRef.current = null;
-        }
-    }, []);
-
-    const flushPending = useCallback(() => {
-        if (pendingMessagesRef.current.length > 0) {
-            setMessages((prev) => [...prev, ...pendingMessagesRef.current]);
-            pendingMessagesRef.current = [];
-        }
-    }, []);
-
-    const handleHistoryTimeout = useCallback(() => {
-        if (!historyLoaded) {
-            setHistoryLoaded(true);
-            flushPending();
-        }
-    }, [flushPending, historyLoaded]);
-
-    const scheduleHistoryTimeout = useCallback(() => {
-        clearHistoryTimer();
-        historyTimerRef.current = window.setTimeout(handleHistoryTimeout, historyTimeoutMs);
-    }, [clearHistoryTimer, handleHistoryTimeout, historyTimeoutMs]);
-
-    const handleIncomingMessage = useCallback(
-        (message: ChatMessage) => {
-            if (!historyLoaded) {
-                pendingMessagesRef.current.push(message);
-                return;
-            }
-            setMessages((prev) => [...prev, message]);
-        },
-        [historyLoaded],
-    );
-
-    const handleHistory = useCallback(
-        (payload: ChatMessage[] | ChatMessage) => {
-            const history = Array.isArray(payload) ? payload : [payload];
-            setMessages(history);
-            setHistoryLoaded(true);
-            flushPending();
-        },
-        [flushPending],
-    );
 
     const connect = useCallback(() => {
         if (clientRef.current?.active) {
@@ -96,39 +41,64 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         }
 
         const token = localStorage.getItem("jwtToken");
+
+        if (!token) {
+            console.error("No JWT token found");
+            setError("Authentication token not found");
+            return;
+        }
+
         const client = new Client({
             webSocketFactory: () => new WebSocket(url),
-            connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+            connectHeaders: { Authorization: `Bearer ${token}` },
             debug: (str) => console.log('STOMP:', str),
             reconnectDelay: 0,
             heartbeatIncoming: 0,
             heartbeatOutgoing: 0,
             onConnect: () => {
+                console.log("✅ WebSocket connected");
                 reconnectAttemptRef.current = 0;
                 setIsConnected(true);
                 setIsConnecting(false);
                 setError(null);
-                setHistoryLoaded(false);
-                scheduleHistoryTimeout();
 
+                // Subscribe to public chat messages
                 client.subscribe("/topic/public", (msg: IMessage) => {
-                    const parsed = JSON.parse(msg.body) as ChatMessage;
-                    handleIncomingMessage(parsed);
+                    console.log("📨 Received message:", msg.body);
+                    try {
+                        const parsed = JSON.parse(msg.body) as ChatMessage;
+                        console.log("✅ Parsed:", parsed);
+                        setMessages((prev) => [...prev, parsed]);
+                    } catch (err) {
+                        console.error("❌ Parse error:", err);
+                    }
                 });
 
-                client.subscribe("/queue/history", (msg: IMessage) => {
-                    const parsed = JSON.parse(msg.body) as ChatMessage[] | ChatMessage;
-                    handleHistory(parsed);
+                // Subscribe to chat history
+                client.subscribe("/user/queue/history", (msg: IMessage) => {
+                    console.log("📜 Received history:", msg.body);
+                    try {
+                        const parsed = JSON.parse(msg.body);
+                        const history = Array.isArray(parsed) ? parsed : [parsed];
+                        console.log("✅ Loaded history:", history.length, "messages");
+                        setMessages(history);
+                    } catch (err) {
+                        console.error("❌ History parse error:", err);
+                    }
                 });
             },
             onWebSocketClose: () => {
+                console.log("🔌 WebSocket disconnected");
                 setIsConnected(false);
                 setIsConnecting(false);
-                clearHistoryTimer();
+
                 const attempt = reconnectAttemptRef.current;
                 const delay = Math.min(30000, 1000 * Math.pow(2, attempt));
                 reconnectAttemptRef.current += 1;
-                window.setTimeout(() => {
+
+                console.log(`🔄 Reconnecting in ${delay}ms (attempt ${attempt + 1})`);
+
+                setTimeout(() => {
                     if (clientRef.current && clientRef.current !== client) {
                         return;
                     }
@@ -136,6 +106,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
                 }, delay);
             },
             onStompError: (frame) => {
+                console.error("❌ STOMP error:", frame);
                 setError(frame.headers["message"] || "WebSocket error");
             },
         });
@@ -143,23 +114,26 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         clientRef.current = client;
         setIsConnecting(true);
         client.activate();
-    }, [clearHistoryTimer, handleHistory, handleIncomingMessage, scheduleHistoryTimeout, url]);
+    }, [url]);
 
     const disconnect = useCallback(() => {
-        clearHistoryTimer();
+        console.log("🔌 Disconnecting WebSocket");
         setIsConnected(false);
         setIsConnecting(false);
         clientRef.current?.deactivate();
         clientRef.current = null;
-    }, [clearHistoryTimer]);
+    }, []);
 
     const sendMessage = useCallback(
         (content: string, type: string = "CHAT") => {
             const client = clientRef.current;
             if (!client || !client.connected) {
+                console.error("❌ Cannot send: not connected");
                 setError("Not connected");
                 return;
             }
+
+            console.log("📤 Sending message:", { content, type });
             client.publish({
                 destination: "/app/chat.sendMessage",
                 body: JSON.stringify({ content, type }),
@@ -175,15 +149,13 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         return () => {
             disconnect();
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoConnect]);
+    }, [autoConnect, connect, disconnect]);
 
     return {
         isConnected,
         isConnecting,
         error,
         messages,
-        historyLoaded,
         connect,
         disconnect,
         sendMessage,
