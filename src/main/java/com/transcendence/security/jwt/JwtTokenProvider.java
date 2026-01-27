@@ -80,10 +80,10 @@ public class JwtTokenProvider {
 
     public LocalDateTime getExpiryDateFromToken(String token) {
         Claims claims = Jwts.parser()
-                .verifyWith(key()) // Use key() method you already defined
+                .verifyWith(key())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload(); // In JJWT 0.12+, getBody() is now getPayload()
+                .getPayload();
 
         // Convert the java.util.Date to LocalDateTime
         return claims.getExpiration()

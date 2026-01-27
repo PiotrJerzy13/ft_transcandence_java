@@ -1,7 +1,6 @@
 import { BarChart3, Trophy } from 'lucide-react';
 import type { PlayerStats, ArkanoidScore, PongGame } from '../../types.ts';
 
-// Helper Type Guards
 function isPongStats(stats: any): stats is { wins?: number; total?: number } {
   return 'wins' in stats || 'total' in stats;
 }

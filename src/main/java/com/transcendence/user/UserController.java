@@ -20,7 +20,6 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    // constructor injection
     public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
@@ -37,7 +36,7 @@ public class UserController {
                 .getId();
     }
 
-    // GET /api/user/me
+    //GET /api/user/me
     @GetMapping("/me")
     public ResponseEntity<UserMeResponse> getMe() {
         Long userId = getAuthenticatedUserId();
@@ -50,7 +49,7 @@ public class UserController {
         ));
     }
 
-    // GET /api/user/profile
+    //GET /api/user/profile
     @GetMapping("/profile")
     public ResponseEntity<UserProfileResponse> getProfile() {
         Long userId = getAuthenticatedUserId();
@@ -69,7 +68,7 @@ public class UserController {
         ));
     }
 
-    // GET /api/user/achievements
+    //GET /api/user/achievements
     @GetMapping("/achievements")
     public ResponseEntity<AchievementsResponse> getAchievements() {
         return ResponseEntity.ok(new AchievementsResponse(new Object[]{}));

@@ -1,6 +1,3 @@
-//This component will display the "CYBER PONG ARENA" title and 
-// the user's summary on the right.
-
 import { User } from 'lucide-react';
 import type { PlayerStats } from '../../types.ts';
 

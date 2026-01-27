@@ -5,9 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -19,32 +18,57 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
 
+    private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
-//    private final SimpMessagingTemplate messagingTemplate;
+    private final OnlineUsersService onlineUsersService;
 
     @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
-    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO message, Principal principal) {
-        log.info("Controller received - Principal: {}", principal);
+    public void sendMessage(@Payload ChatMessageDTO messageDTO, Principal principal) {
+        String username = principal.getName();
 
-        if (principal == null) {
-            log.error("Principal is NULL in controller!");
-            throw new IllegalStateException("User not authenticated");
-        }
+        messageDTO.setSender(username);
+        messageDTO.setTimestamp(LocalDateTime.now());
 
-        message.setSender(principal.getName());
-        message.setTimestamp(LocalDateTime.now());
+        log.info("Received message from {}: {}", username, messageDTO.getContent());
 
-        chatService.saveMessage(message);
+        // Broadcast message to all users
+        messagingTemplate.convertAndSend("/topic/public", messageDTO);
 
-        return message;
+        // Save message asynchronously
+        chatService.saveMessage(messageDTO);
     }
 
-    // This is triggered when a client subscribes to /queue/history
-    @SubscribeMapping("/user/queue/history")
-    public List<ChatMessageDTO> getHistory(Principal principal) {
-        log.info("History requested by user: {}", principal != null ? principal.getName() : "anonymous");
+    @MessageMapping("/chat.addUser")
+    public void addUser(@Payload ChatMessageDTO messageDTO,
+                        SimpMessageHeaderAccessor headerAccessor,
+                        Principal principal) {
+        String username = principal.getName();
+        String sessionId = headerAccessor.getSessionId();
 
-        return chatService.getRecentMessages(50);
+        log.info("User {} joined the chat (session: {})", username, sessionId);
+
+        // Send chat history to the newly connected user
+        List<ChatMessageDTO> recentMessages = chatService.getRecentMessages(50);
+        messagingTemplate.convertAndSendToUser(
+                username,
+                "/queue/history",
+                recentMessages
+        );
+
+        List<String> onlineUsers = onlineUsersService.getOnlineUsers();
+        messagingTemplate.convertAndSendToUser(
+                username,
+                "/queue/users",
+                onlineUsers
+        );
+
+        // Notify others that a user joined
+        ChatMessageDTO joinMessage = new ChatMessageDTO();
+        joinMessage.setSender("System");
+        joinMessage.setContent(username + " joined the chat");
+        joinMessage.setType("JOIN");
+        joinMessage.setTimestamp(LocalDateTime.now());
+
+        messagingTemplate.convertAndSend("/topic/public", joinMessage);
     }
 }

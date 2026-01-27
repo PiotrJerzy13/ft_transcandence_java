@@ -26,7 +26,5 @@ public class ChatMessage {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
-    // Optional: Add a type field if you want to distinguish
-    // between CHAT, JOIN, and LEAVE messages later.
     private String type;
 }

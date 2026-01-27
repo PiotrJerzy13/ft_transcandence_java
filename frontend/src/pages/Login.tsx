@@ -20,7 +20,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            // Don't use authFetch for login - it's not an authenticated endpoint
+            // No authFetch for login - it's not an authenticated endpoint
             const response = await fetch(buildApiUrl("/auth/login"), {
                 method: "POST",
                 headers: {

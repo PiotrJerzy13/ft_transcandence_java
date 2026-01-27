@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        // Check for "Bearer " prefix and extract the token
+
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
@@ -49,7 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt)) {
-                // Check Blacklist
                 if (blacklistedTokenRepository.existsByToken(jwt)) {
                     logger.warn("Blacklisted token access attempted");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -1,4 +1,3 @@
-// frontend/src/context/AuthContext.tsx
 import { createContext, useState, useContext, useCallback, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { authFetch, buildApiUrl } from '../utils/api.ts';

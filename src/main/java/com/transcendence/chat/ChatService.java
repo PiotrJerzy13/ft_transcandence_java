@@ -21,6 +21,11 @@ public class ChatService {
     @Async
     @Transactional
     public void saveMessage(ChatMessageDTO messageDTO) {
+        if ("JOIN".equals(messageDTO.getType()) || "LEAVE".equals(messageDTO.getType())) {
+            log.info("Skipping system message from: {}", messageDTO.getSender());
+            return;
+        }
+
         ChatMessage entity = new ChatMessage();
         entity.setSender(messageDTO.getSender());
         entity.setContent(messageDTO.getContent());

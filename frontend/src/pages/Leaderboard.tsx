@@ -11,8 +11,8 @@ interface LeaderboardPlayer {
   wins: number;
   losses: number;
   xp: number;
-  bestStreak: number; // Changed from best_streak to bestStreak
-  winRate: number;    // Changed from win_rate to winRate
+  bestStreak: number;
+  winRate: number;
 }
 
 export default function Leaderboard() {

@@ -1,4 +1,3 @@
-// frontend/src/context/PlayerDataContext.tsx
 import { createContext, useState, useContext, useCallback, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { PlayerStats, Achievement } from '../types.ts';
@@ -42,10 +41,9 @@ export const PlayerDataProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             console.log(`[PlayerData] Attempt ${retryCount + 1}: Starting authentication check...`);
-            // NOTE: document.cookie check is misleading here, JWT is not a cookie.
 
             // 1. First check if user is authenticated using authFetch
-            const authRes = await authFetch('/user/me'); // <-- USE authFetch
+            const authRes = await authFetch('/user/me');
 
             console.log(`[PlayerData] Auth check response:`, {
                 status: authRes.status,
@@ -54,7 +52,6 @@ export const PlayerDataProvider = ({ children }: { children: ReactNode }) => {
             });
 
             if (!authRes.ok) {
-                // ... (unauthenticated logic remains the same) ...
                 setPlayerData(null);
                 setLoading(false);
                 return;
@@ -62,7 +59,7 @@ export const PlayerDataProvider = ({ children }: { children: ReactNode }) => {
 
             console.log('Auth check passed, fetching profile...');
 
-            const res = await authFetch('/user/profile', { // <-- USE authFetch
+            const res = await authFetch('/user/profile', {
                 headers: {
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
@@ -77,11 +74,6 @@ export const PlayerDataProvider = ({ children }: { children: ReactNode }) => {
             });
 
             if (!res.ok) {
-                // ... (error/retry logic remains the same) ...
-                if (res.status === 401 && retryCount < 3) {
-                    // You may remove the retry logic entirely if authFetch is reliable,
-                    // as the race condition was tied to cookie/session setup.
-                }
                 if (res.status === 401) {
                     setPlayerData(null);
                     return;
@@ -92,7 +84,6 @@ export const PlayerDataProvider = ({ children }: { children: ReactNode }) => {
 
             const data = await res.json();
 
-      // Transform data here once
       const transformedStats: PlayerStats = {
         ...data.stats,
         totalPlayTime: data.stats.totalPlayTime || "0h 0m",
@@ -113,8 +104,6 @@ export const PlayerDataProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
   useEffect(() => {
-    // Don't fetch automatically on mount - let protected routes trigger it
-    // This prevents unnecessary calls when user is on login page
     console.log('[PlayerData] Provider mounted, waiting for explicit fetch call');
   }, []);
 

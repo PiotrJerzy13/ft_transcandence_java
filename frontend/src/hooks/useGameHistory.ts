@@ -21,7 +21,6 @@ export const useGameHistory = <T extends PongGame | ArkanoidScore>(game: 'pong' 
         try {
             const endpoint = game === 'pong' ? '/pong/history' : '/arkanoid/history';
 
-            // 1. ***USE authFetch HERE*** // authFetch handles the base URL (http://localhost:8080/api) and adds the JWT header.
             const res = await authFetch(endpoint, {
                 // REMOVE: credentials: 'include',
                 headers: {
@@ -38,10 +37,8 @@ export const useGameHistory = <T extends PongGame | ArkanoidScore>(game: 'pong' 
             
             const data = await res.json();
             setHistory(data.history || []);
-            
-            // Calculate some stats
+
             if (game === 'pong' && data.history) {
-                // CORRECTED LOGIC
                 const wins = (data.history as PongGame[]).filter(g => g.winner === 'player').length;
                 setStats({
                     wins,

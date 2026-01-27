@@ -47,10 +47,8 @@ public class UserStatsService {
         stats.setWinStreak(newWinStreak);
         stats.setBestStreak(Math.max(stats.getBestStreak(), newWinStreak));
 
-        // play time
         stats.setTotalPlayTime(stats.getTotalPlayTime() + duration);
 
-        // XP + level
         int newXp = stats.getXp() + xpEarned;
         stats.setXp(newXp);
 

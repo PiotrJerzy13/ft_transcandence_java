@@ -1,4 +1,3 @@
-//This component will contain the two cards for selecting Pong or Arkanoid.
 import { Users, Target } from 'lucide-react';
 
 interface GameModeSelectionProps {

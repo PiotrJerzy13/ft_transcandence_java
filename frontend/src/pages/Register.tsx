@@ -1,4 +1,3 @@
-// Register.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { buildApiUrl } from "../utils/api.ts";
@@ -66,9 +65,6 @@ export default function Register() {
                     console.error("Failed to parse JSON error response:", parseError);
                 }
             } else {
-                // 2. If it's not JSON (e.g., plain text or HTML), use the status text
-                // If you want the plain text body, use await res.text() here.
-                // For now, let's use the status text.
                 console.error("Non-JSON error response from server.");
                 errorMessage = res.statusText;
             }

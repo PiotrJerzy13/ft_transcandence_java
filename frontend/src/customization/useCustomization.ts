@@ -1,4 +1,3 @@
-// Arena state
 import { useState } from 'react';
 import { CustomizationProfile } from './CustomizationPanel.tsx';
 import { ArenaOptions } from './ArenaSettings.tsx';

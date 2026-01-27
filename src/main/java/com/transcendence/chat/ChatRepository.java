@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ChatRepository extends JpaRepository<ChatMessage, Long> {
-    // Fetch the most recent messages for the lobby history
     List<ChatMessage> findTop50ByOrderByTimestampDesc();
 
     @Query("SELECT c FROM ChatMessage c ORDER BY c.timestamp DESC")

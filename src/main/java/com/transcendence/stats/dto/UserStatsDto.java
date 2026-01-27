@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class UserStatsDto {
 
     private Long id;
-//JsonProperty because frontend expects snake_case
+    //JsonProperty because frontend expects snake_case
     @JsonProperty("user_id")
     private Long userId;
 

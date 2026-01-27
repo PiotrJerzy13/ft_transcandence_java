@@ -121,8 +121,6 @@ class PongControllerTest {
                 .andExpect(jsonPath("$.userStats.wins").value(6))
                 .andExpect(jsonPath("$.userStats.level").value(2))
                 .andExpect(jsonPath("$.userStats.xp").value(100));
-//                .andExpect(jsonPath("$.xpGained").value(50))
-//                .andExpect(jsonPath("$.leveledUp").value(true));
     }
 
     @Test
@@ -170,21 +168,6 @@ class PongControllerTest {
                 .andExpect(status().isUnauthorized()); // 403 for POST requests
     }
 
-//    @Test
-//    @WithMockUser(username = TEST_USERNAME)
-//    void saveScore_shouldReturnBadRequest_whenInvalidRequest() throws Exception {
-//        // ARRANGE - Create invalid request (assuming validation exists)
-//        PongScoreRequest invalidRequest = new PongScoreRequest();
-//        // Don't set required fields
-//
-//        // ACT & ASSERT
-//        mockMvc.perform(post("/api/pong/score")
-//                        .with(csrf()) // Added CSRF token
-//                        .param("mode", "one-player")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(invalidRequest)))
-//                .andExpect(status().isBadRequest());
-//    }
 
     // ====================================================================
     // 2. Test GET /api/pong/history
@@ -216,9 +199,8 @@ class PongControllerTest {
     @Test
     @WithMockUser(username = TEST_USERNAME)
     void getHistory_shouldReturnHistoryWithMatches_whenMatchesExist() throws Exception {
-        // ARRANGE - Add some mock history data
-        // You'll need to create PongMatchDto objects here based on your actual DTO structure
-        // For now, just testing that the service is called
+
+        // Testing that the service is called
         when(pongService.getHistory(TEST_USER_ID)).thenReturn(historyResponse);
 
         // ACT & ASSERT

@@ -34,6 +34,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
     const connect = useCallback(() => {
         if (clientRef.current?.active) {
@@ -86,11 +87,44 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
                         console.error("❌ History parse error:", err);
                     }
                 });
+
+                // Subscribe to online users updates
+                client.subscribe("/topic/users", (msg: IMessage) => {
+                    console.log("👥 Received online users:", msg.body);
+                    try {
+                        const users = JSON.parse(msg.body);
+                        const userList = Array.isArray(users) ? users : [];
+                        console.log("✅ Online users:", userList);
+                        setOnlineUsers(userList);
+                    } catch (err) {
+                        console.error("❌ Users parse error:", err);
+                    }
+                });
+
+                // Subscribe to user-specific queue for initial users list
+                client.subscribe("/user/queue/users", (msg: IMessage) => {
+                    console.log("👥 Received initial users list:", msg.body);
+                    try {
+                        const users = JSON.parse(msg.body);
+                        const userList = Array.isArray(users) ? users : [];
+                        console.log("✅ Initial online users:", userList);
+                        setOnlineUsers(userList);
+                    } catch (err) {
+                        console.error("❌ Initial users parse error:", err);
+                    }
+                });
+
+                // Request initial data (history and users)
+                client.publish({
+                    destination: "/app/chat.addUser",
+                    body: JSON.stringify({ type: "JOIN" }),
+                });
             },
             onWebSocketClose: () => {
                 console.log("🔌 WebSocket disconnected");
                 setIsConnected(false);
                 setIsConnecting(false);
+                setOnlineUsers([]); // Clear online users on disconnect
 
                 const attempt = reconnectAttemptRef.current;
                 const delay = Math.min(30000, 1000 * Math.pow(2, attempt));
@@ -120,6 +154,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         console.log("🔌 Disconnecting WebSocket");
         setIsConnected(false);
         setIsConnecting(false);
+        setOnlineUsers([]);
         clientRef.current?.deactivate();
         clientRef.current = null;
     }, []);
@@ -156,6 +191,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         isConnecting,
         error,
         messages,
+        onlineUsers,
         connect,
         disconnect,
         sendMessage,

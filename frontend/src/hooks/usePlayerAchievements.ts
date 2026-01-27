@@ -1,4 +1,3 @@
-// src/hooks/usePlayerAchievements.ts
 import { useState, useEffect } from 'react';
 import type { Achievement } from '../types.ts';
 import { defaultAchievements } from '../constants/achievements.ts';

@@ -47,7 +47,7 @@ class CustomUserDetailsServiceTest {
         assertNotNull(userDetails);
         assertEquals(MOCK_USERNAME, userDetails.getUsername());
         assertEquals(MOCK_PASSWORD_HASH, userDetails.getPassword());
-        assertTrue(userDetails.getAuthorities().isEmpty()); // Assert that authorities are empty as expected
+        assertTrue(userDetails.getAuthorities().isEmpty());
         verify(userRepository, times(1)).findByUsername(MOCK_USERNAME);
     }
 
