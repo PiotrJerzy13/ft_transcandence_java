@@ -1,4 +1,3 @@
-// src/hooks/usePlayerStats.ts
 import { useState, useEffect } from 'react';
 import type { PlayerStats } from '../types.ts';
 import { authFetch } from '../utils/api.ts';

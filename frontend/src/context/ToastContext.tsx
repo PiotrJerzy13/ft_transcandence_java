@@ -4,7 +4,7 @@ import AchievementToast from '../components/AchievementToast.tsx';
 import type { Achievement } from '../types.ts';
 
 interface Toast extends Achievement {
-  id: number; // Ensure unique key
+  id: number;
 }
 
 interface ToastContextType {

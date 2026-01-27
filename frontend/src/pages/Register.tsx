@@ -1,6 +1,6 @@
-// Register.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { buildApiUrl } from "../utils/api.ts";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export default function Register() {
 }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/register", {
+      const res = await fetch(buildApiUrl("/auth/register"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,9 +65,6 @@ export default function Register() {
                     console.error("Failed to parse JSON error response:", parseError);
                 }
             } else {
-                // 2. If it's not JSON (e.g., plain text or HTML), use the status text
-                // If you want the plain text body, use await res.text() here.
-                // For now, let's use the status text.
                 console.error("Non-JSON error response from server.");
                 errorMessage = res.statusText;
             }

@@ -54,6 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         // Public endpoints (login, register)
                         .requestMatchers("/api/auth/**").permitAll()
+                        // WebSocket endpoint (authentication handled by JwtChannelInterceptor)
+                        .requestMatchers("/ws/**").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 );

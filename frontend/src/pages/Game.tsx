@@ -133,8 +133,6 @@ export default function Game() {
         }
         const response = await authFetch(`/pong/score?mode=${gameMode}`, {
             method: 'POST',
-            // authFetch already sets Content-Type, but it's safe to include in options
-            // REMOVE: credentials: 'include' (authFetch handles security)
             body: JSON.stringify({
                 score: gameState.playerScore,
                 opponentScore: gameState.opponentScore,
@@ -160,7 +158,6 @@ export default function Game() {
           addToast(ach);
         });
       }
-      // fetchHistory(); // The Lobby will now have a history component
     } catch (err) {
       console.error('Failed to save Pong score:', err);
     }
@@ -393,13 +390,6 @@ export default function Game() {
           : (gameMode === 'one-player' ? 'AI Wins!' : 'Player 2 Wins!');
         setWinner(winnerText);
         setGameState('gameOver');
-        // Add particles from game result (create a new array instead of mutating readonly)
-        if (gameResult.particles) {
-          // pongGameRef.current.getParticles().push(...gameResult.particles); // <-- invalid
-          // Instead, if you want to show new particles, you should update a mutable array in Pong class, or trigger a re-render
-          // For now, skip this line or refactor Pong class if needed
-        }
-        // Save score when game ends
         if (!gameScoreSaved.current) {
           gameScoreSaved.current = true;
           setTimeout(() => savePongScore(), 500);

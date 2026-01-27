@@ -28,7 +28,7 @@ public class ArkanoidService {
 
         int xpEarned = request.getXpEarned();
 
-        // 2. Save score row
+        // Save score row
         ArkanoidScore score = ArkanoidScore.builder()
                 .userId(userId)
                 .score(request.getScore())
@@ -41,7 +41,6 @@ public class ArkanoidService {
 
         arkanoidScoreRepository.save(score);
 
-        // 3. Update stats
         UserStats updatedStats = userStatsService.updateAfterGame(
                 userId,
                 true,
@@ -49,7 +48,7 @@ public class ArkanoidService {
                 xpEarned
         );
 
-        // 4. Build response
+        // Build response
         return new SaveScoreResponse(
                 true,
                 "Score saved successfully",

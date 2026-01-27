@@ -1,11 +1,4 @@
-// xpCalculator.ts
-/**
- * Calculate XP for completing a level
- * @param score Current score
- * @param level Current level completed
- * @param lives Remaining lives
- * @returns XP amount earned
- */
+
 export const calculateLevelXp = (score: number, level: number, lives: number): number => {
     const baseXp = level * 100; // Base XP scales with level
     const scoreBonus = Math.floor(score / 10); // 1 XP per 10 points
@@ -13,33 +6,17 @@ export const calculateLevelXp = (score: number, level: number, lives: number): n
     return baseXp + scoreBonus + livesBonus;
 };
 
-/**
- * Calculate XP when game ends (game over)
- * @param score Final score
- * @param level Highest level reached
- * @returns XP amount earned
- */
 export const calculateGameOverXp = (score: number, level: number): number => {
     const baseXp = level * 50; // Smaller base for game over
     const scoreBonus = Math.floor(score / 20); // Less XP per point
     return baseXp + scoreBonus;
 };
 
-/**
- * Calculate total XP needed for a specific player level
- * @param playerLevel Target player level
- * @returns Total XP required
- */
 export const calculateXpForLevel = (playerLevel: number): number => {
     // Exponential growth: level 1 = 100 XP, level 2 = 250 XP, level 3 = 450 XP, etc.
     return playerLevel * 150 + (playerLevel - 1) * 50;
 };
 
-/**
- * Calculate current player level based on total XP
- * @param totalXp Total XP earned
- * @returns Current player level and progress to next level
- */
 export const calculatePlayerLevel = (totalXp: number): { level: number; currentLevelXp: number; nextLevelXp: number; progress: number } => {
     let level = 1;
     let xpForCurrentLevel = 0;
@@ -63,11 +40,6 @@ export const calculatePlayerLevel = (totalXp: number): { level: number; currentL
     };
 };
 
-/**
- * Visual effect helper for XP gain notifications
- * @param amount XP amount gained
- * @param containerId Container element ID for the notification
- */
 export const showXpGain = (amount: number, containerId: string = 'xp-notification-container'): void => {
     const xpGainElement = document.createElement('div');
     xpGainElement.className = 'xp-gain-popup';
@@ -80,8 +52,7 @@ export const showXpGain = (amount: number, containerId: string = 'xp-notificatio
     xpGainElement.style.animation = 'floatUp 1.5s ease-out forwards';
     xpGainElement.style.pointerEvents = 'none';
     xpGainElement.style.zIndex = '1000';
-    
-    // Add CSS animation if it doesn't exist
+
     if (!document.querySelector('#xp-float-animation')) {
         const style = document.createElement('style');
         style.id = 'xp-float-animation';
@@ -106,8 +77,7 @@ export const showXpGain = (amount: number, containerId: string = 'xp-notificatio
     const container = document.getElementById(containerId);
     if (container) {
         container.appendChild(xpGainElement);
-        
-        // Remove after animation
+
         setTimeout(() => {
             if (xpGainElement.parentNode) {
                 xpGainElement.parentNode.removeChild(xpGainElement);

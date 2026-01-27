@@ -13,8 +13,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactElem
             try {
                 console.log("[ProtectedRoute] Checking authentication...");
 
-                // 1. ***USE authFetch HERE*** // authFetch automatically gets the token from localStorage and adds the Bearer header.
-                const res = await authFetch("/user/me"); // Use relative endpoint, as authFetch handles the base URL.
+                const res = await authFetch("/user/me");
 
                 console.log("[ProtectedRoute] Auth check result:", res.ok);
 

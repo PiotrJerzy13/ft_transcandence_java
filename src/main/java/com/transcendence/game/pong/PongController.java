@@ -38,10 +38,8 @@ public class PongController {
                 .getId();
     }
 
-    /**
-     * Save Pong score
-     * POST /api/pong/score?mode=one-player
-     */
+
+    // POST /api/pong/score?mode=one-player
     @PostMapping("/score")
     public ResponseEntity<SaveScoreResponse> saveScore(
             @RequestParam(defaultValue = "one-player") String mode,
@@ -61,10 +59,8 @@ public class PongController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get Pong match history
-     * GET /api/pong/history
-     */
+
+    // GET /api/pong/history
     @GetMapping("/history")
     public ResponseEntity<PongHistoryResponse> getHistory() {
         Long userId = getAuthenticatedUserId();

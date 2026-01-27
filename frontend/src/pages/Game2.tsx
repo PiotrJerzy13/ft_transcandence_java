@@ -6,7 +6,7 @@ import type { ArkanoidScore } from '../types.ts';
 import { useNavigate } from "react-router-dom";
 import { useToasts } from '../context/ToastContext.tsx';
 import { usePlayerAchievements } from '../hooks/usePlayerAchievements.ts';
-import { usePlayerData } from '../context/PlayerDataContext.tsx'; // Import player data context
+import { usePlayerData } from '../context/PlayerDataContext.tsx';
 import { authFetch } from '../utils/api.ts';
 
 
